@@ -7,6 +7,6 @@ Todo:
 * Write whitepaper
 * Build pitch deck 🟠
 * Mockup screens 🟠
-* Host on Github 
-* Cloudflare integration
-* 
+* Host on Github 🟢
+* Cloudflare integration 🟢
+* Crisp 🟢
