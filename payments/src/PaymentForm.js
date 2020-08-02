@@ -20,6 +20,18 @@ const useStyles = makeStyles((theme) => ({
       fontSize: '12px',
       textAlign: 'center'
     },
+    heading: {
+        color: '#fff',
+        fontSize: '24px',
+        textAlign: 'left',
+        lineHeight: '18px',
+        marginTop: '10px'
+    },
+    subHeading: {
+        color: '#7B7F9E',
+        fontSize: '12px',
+        textAlign: 'left'
+    },
     input: {
         padding: 0,
         color: '#fff',
@@ -43,6 +55,23 @@ const useStyles = makeStyles((theme) => ({
         paddingLeft: 5,
         paddingRight: 5,
         lineHeight: 50,
+    },
+    cardWrapper: {
+        padding: 0,
+        color: '#fff',
+        textAlign: 'center',
+        fontSize: 24, 
+        display: 'block',
+        borderColor: '#282a36',
+        borderRadius: 12,
+        backgroundColor: '#212330',
+        textAlign: 'center',
+        paddingTop: 13,
+        paddingBottom: 13,
+        paddingLeft: 5,
+        paddingRight: 5,
+        marginTop: 10,
+        //lineHeight: 50,
     },
     inputWrapper: {
         color: '#fff',
@@ -80,6 +109,18 @@ const useStyles = makeStyles((theme) => ({
         paddingRight: 25,
         borderRadius: 12,
         fontSize: 36,
+    },
+    loader: {
+        width: 235
+    },
+    success: {
+        width: 183,
+        marginTop: 71,
+        marginBottom: 71,
+    },
+    circle: {
+        width: 44,
+        height: 44,
     }
   }));
 
@@ -88,29 +129,16 @@ export default function PaymentForm() {
 
     const [cards, setCards] = React.useState([]);
     const [loading, setLoading] = React.useState(false);
+    const [processing, setProcessing] = React.useState(false);
     const [error, setError] = React.useState(false);
     const [success, setSuccess] = React.useState(false);
     const [paymentId, setPaymentId] = React.useState(null);
 
-    /*constructor(props){
-        super(props);
-
-        // test wallet id: 1000025934
-        this.state ={
-            loading: false,
-            error: false,
-            paymentId: null,
-            success: false,
-            cards: []
-        }
-
-        this.createPayment = this.createPayment.bind(this);
-        this.checkPayment = this.checkPayment.bind(this);
-    }*/
-
     async function createPayment() {
-        setLoading(true)
+        setProcessing(true)
         
+        //console.log(cards);
+
        let payment = await CircleApi.createPayment({
             email: 'ruan@segment.money',
             phoneNumber: '+27646909349',
@@ -119,29 +147,37 @@ export default function PaymentForm() {
             cardId: 'db18ed0c-69f4-4fb5-ae37-891e6067f434',
             amount: 10,
             number: '4200000000000000',
-            currency: 'USD'
+            currency: 'USD',
+            sourceId: cards[0].id
         });
 
         //console.log(payment.data)
         
-
+        setPaymentId(payment.data.id)
+        
         let interval = setInterval(() => {
             if (success || error) {
                 clearInterval(interval)
             }
+            //console.log(paymentId)
             checkPayment(payment.data.id);
         }, 2000);
+
+        setTimeout(() => {
+            clearInterval(interval);
+        }, 5000)
     }
 
     async function checkPayment(paymentID) {
         //console.log(paymentID)
         if (paymentID !== null) {
             let payment = await CircleApi.getPayment(paymentID);
-            console.log(payment)
+            //console.log(payment)
             if (payment.status == 'confirmed' || payment.status == 'success') {
-                setLoading(false);
+                setProcessing(false);
+                setSuccess(true);
             } else if (payment.status == 'failed' || payment.status == 'payment_failed') {
-                setLoading(false);
+                setProcessing(false);
                 setError(true);
             }
         }
@@ -152,8 +188,14 @@ export default function PaymentForm() {
 
        let cards = await CircleApi.getCard();
 
-       setCards(cards.data);
-       setLoading(false);
+
+        if (cards.data.length == 0) {
+            let cards = await CircleApi.createCard();
+        }
+        else {
+            setCards(cards.data);
+            setLoading(false);
+        }
     }
     
 
@@ -162,15 +204,273 @@ export default function PaymentForm() {
             getCards();
         }
     }, [cards]);
-
-    
         const classes = useStyles();
         if (loading) {
-            return <LinearProgress />
+            return (
+                <LinearProgress />
+            )
+        } else if (processing) {
+            return (
+                <React.Fragment>
+                    <Typography variant="h6" gutterBottom color="white" className={classes.label} >
+                        Processing payment
+                    </Typography>
+                    <div className={classes.cardWrapper}>
+                        <img src="loader.gif" alt="alternative" className={classes.loader} />
+                    </div>
+
+                    <div
+                    style={{
+                        whiteSpace: 'normal',
+                        display: 'flex',
+                        flexWrap: 'wrap',
+                        justifyContent: 'space-between',
+                        flexDirection: 'row',
+                        padding: 30,
+                    }}>
+                        <div style={{
+                            whiteSpace: 'normal',
+                            display: 'flex',
+                            flexWrap: 'wrap',
+                            flexDirection: 'row',
+                            justifyContent: 'flex-start',
+                            
+                        }}>
+                        
+                            <img src="circle.png" alt="alternative" className={classes.circle} style={{height: 25, width: 25, marginRight: 10, position: 'relative', top: 10}} />
+                            <div
+                            style={{
+                                whiteSpace: 'normal',
+                                display: 'flex',
+                                flexWrap: 'wrap',
+                                justifyContent: 'space-between',
+                                flexDirection: 'column',
+                            }}>
+                                <Typography variant="h6" gutterBottom color="white" className={classes.heading} style={{fontSize: 14, lineHeight: '10px'}}>
+                                    Circle Merch
+                                </Typography>
+                                <Typography variant="h6" gutterBottom color="white" className={classes.subHeading} style={{fontSize: 10}}>
+                                    Boston, MA
+                                </Typography>
+                            </div>
+                        </div>
+                        <div style={{
+                            whiteSpace: 'normal',
+                            display: 'flex',
+                            flexWrap: 'wrap',
+                            justifyContent: 'space-between'
+                        }}>
+                            <Typography variant="h6" gutterBottom color="white" className={classes.heading} style={{fontSize: 20}}>
+                                ARS $10.00
+                            </Typography>
+                        </div>
+                    </div>
+
+                    <Grid item xs={12} md={12} >
+                        <div className={classes.selectWrapper}>
+                            <Select variant="filled" required id="amount" 
+                                classes={{
+                                    root: classes.select, // class name, e.g. `classes-nesting-root-x`
+                                }}
+                                fullWidth
+                                //onChange={handleChange}
+                                defaultValue={cards[0]}
+                                renderValue={selected => {
+                                    return (
+                                        <div
+                                            style={{
+                                                whiteSpace: 'normal',
+                                                display: 'flex',
+                                                flexWrap: 'wrap',
+                                                justifyContent: 'center'
+                                            }}
+                                        >
+                                            <React.Fragment>
+                                                <Typography style={{
+                                                    lineHeight: '35px',
+                                                    maxWidth: '70%',
+                                                    overflow: 'hidden',
+                                                    height: 35,
+                                                }}>
+                                                    {selected.id}
+                                                </Typography>
+                                                <img src="marstercard.png" alt="alternative" className={classes.cardIcon} style={{height: '20'}} />
+                                            </React.Fragment>
+                                        </div>
+                                    );
+                                }}
+                            >
+                                {cards.map(value => {
+                                        return (
+                                            <React.Fragment>
+                                                <Typography>
+                                                    {value.id}
+                                                </Typography> 
+                                            </React.Fragment>
+                                        );
+                                    })}
+                            </Select>
+                        </div>
+                        </Grid>
+
+                        <Typography variant="h6" gutterBottom color="white" className={classes.heading} style={{fontSize: 16, textAlign:'center', marginTop: 10}}>
+                            Cancel
+                        </Typography>
+
+                </React.Fragment>
+            )
+        }
+        else if (success) {
+            return (
+                <React.Fragment>
+                    <Typography variant="h6" gutterBottom color="white" className={classes.label} >
+                        Payment Successful
+                    </Typography>
+                    <div className={classes.cardWrapper}>
+                        <img src="success.gif" alt="alternative" className={classes.success} />
+                    </div>
+
+                    <div
+                    style={{
+                        whiteSpace: 'normal',
+                        display: 'flex',
+                        flexWrap: 'wrap',
+                        justifyContent: 'space-between',
+                        flexDirection: 'row',
+                        padding: 30,
+                    }}>
+                        <div style={{
+                            whiteSpace: 'normal',
+                            display: 'flex',
+                            flexWrap: 'wrap',
+                            flexDirection: 'row',
+                            justifyContent: 'flex-start',
+                            
+                        }}>
+                        
+                            <img src="circle.png" alt="alternative" className={classes.circle} style={{height: 25, width: 25, marginRight: 10, position: 'relative', top: 10}} />
+                            <div
+                            style={{
+                                whiteSpace: 'normal',
+                                display: 'flex',
+                                flexWrap: 'wrap',
+                                justifyContent: 'space-between',
+                                flexDirection: 'column',
+                            }}>
+                                <Typography variant="h6" gutterBottom color="white" className={classes.heading} style={{fontSize: 14, lineHeight: '10px'}}>
+                                    Circle Merch
+                                </Typography>
+                                <Typography variant="h6" gutterBottom color="white" className={classes.subHeading} style={{fontSize: 10}}>
+                                    Boston, MA
+                                </Typography>
+                            </div>
+                        </div>
+                        <div style={{
+                            whiteSpace: 'normal',
+                            display: 'flex',
+                            flexWrap: 'wrap',
+                            justifyContent: 'space-between'
+                        }}>
+                            <Typography variant="h6" gutterBottom color="white" className={classes.heading} style={{fontSize: 20}}>
+                                ARS $10.00
+                            </Typography>
+                        </div>
+                    </div>
+
+                    <Grid item xs={12} md={12} >
+                        <div className={classes.selectWrapper}>
+                            <Select variant="filled" required id="amount" 
+                                classes={{
+                                    root: classes.select, // class name, e.g. `classes-nesting-root-x`
+                                }}
+                                fullWidth
+                                //onChange={handleChange}
+                                defaultValue={cards[0]}
+                                renderValue={selected => {
+                                    return (
+                                        <div
+                                            style={{
+                                                whiteSpace: 'normal',
+                                                display: 'flex',
+                                                flexWrap: 'wrap',
+                                                justifyContent: 'center'
+                                            }}
+                                        >
+                                            <React.Fragment>
+                                                <Typography style={{
+                                                    lineHeight: '35px',
+                                                    maxWidth: '70%',
+                                                    overflow: 'hidden',
+                                                    height: 35,
+                                                }}>
+                                                    {selected.id}
+                                                </Typography>
+                                                <img src="marstercard.png" alt="alternative" className={classes.cardIcon} style={{height: '20'}} />
+                                            </React.Fragment>
+                                        </div>
+                                    );
+                                }}
+                            >
+                                {cards.map(value => {
+                                        return (
+                                            <React.Fragment>
+                                                <Typography>
+                                                    {value.id}
+                                                </Typography> 
+                                            </React.Fragment>
+                                        );
+                                    })}
+                            </Select>
+                        </div>
+                        </Grid>
+
+                        <Typography variant="h6" gutterBottom color="white" className={classes.heading} style={{fontSize: 16, textAlign:'right', marginTop: 10, marginRight: 10}}>
+                            Email Receipt
+                        </Typography>
+
+                </React.Fragment>
+            )
         }
         else {
             return (
                 <React.Fragment>
+                    <Typography variant="h6" gutterBottom color="white" className={classes.label} >
+                        Confirm your payment to:
+                    </Typography>
+                    <div className={classes.cardWrapper}
+                        style={{
+                            whiteSpace: 'normal',
+                            display: 'flex',
+                            flexWrap: 'wrap',
+                            justifyContent: 'space-between',
+                            flexDirection: 'row',
+                            padding: 30,
+                            marginBottom: 20
+                        }}>
+                        <div style={{
+                            whiteSpace: 'normal',
+                            display: 'flex',
+                            flexWrap: 'wrap',
+                            flexDirection: 'column',
+                            justifyContent: 'flex-start',
+                            
+                        }}>
+                        <Typography variant="h6" gutterBottom color="white" className={classes.heading} >
+                            Circle Merch
+                        </Typography>
+                        <Typography variant="h6" gutterBottom color="white" className={classes.subHeading} >
+                            Boston, MA
+                        </Typography>
+                        </div>
+                        <div style={{
+                            whiteSpace: 'normal',
+                            display: 'flex',
+                            flexWrap: 'wrap',
+                            justifyContent: 'space-between'
+                        }}>
+                            <img src="circle.png" alt="alternative" className={classes.circle} />
+                        </div>
+                    </div>
                     <Typography variant="h6" gutterBottom color="white" className={classes.label} >
                         You are paying:
                     </Typography>
@@ -239,6 +539,12 @@ export default function PaymentForm() {
                         </Grid>
 
                         <Grid item xs={12}>
+                        {error && 
+                            <Typography color={'red'}>
+                                {'There was an error processing your payment'}
+                            </Typography> 
+                        }
+
                         <Button color="secondary" variant={'primary'} fullWidth className={classes.button} onClick={() => createPayment()}>
                             Pay Now
                         </Button>

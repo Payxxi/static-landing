@@ -1,8 +1,7 @@
 import  axios  from 'axios';
-import * as openpgp from './openpgp';
-//import {OpenPGP as openpgp} from "react-native-fast-openpgp";
-
+//import openpgp from 'openpgp';
 import publicIP from 'react-native-public-ip';
+const openpgp = require('openpgp');
 
  class CircleApi {
     constructor(){
@@ -152,7 +151,7 @@ import publicIP from 'react-native-public-ip';
             encryptedData: encryptedData,
         };
 
-        return axios.post(this.baseUrl + 'cards', this.options)
+        return axios.post(this.baseUrl + 'cards', payload, this.options)
             .then(response => {
                 return response.data
             }).catch(error => {
@@ -164,9 +163,9 @@ import publicIP from 'react-native-public-ip';
         const encryptedData =  await this.encryptCardData(paymentData.cardNumber, paymentData.cvv);
         //var encryptedData =  await this.encryptCardData('4007400000000007', '111');
         
-        var cards = await this.createCard();
+        //var cards = await this.getCard();
 
-        //console.log(cards.data[0])
+        //console.log(cards.data)
         var payload = {
             'idempotencyKey': this.uuidv4(),
             'keyId': encryptedData.keyId,
@@ -180,9 +179,10 @@ import publicIP from 'react-native-public-ip';
                 'amount': paymentData.amount,
                 'currency': paymentData.currency
             },
-            'verification': 'cvv',
+            'verification': 'none',
+            //'verification': 'cvv',
             'source': {
-                'id': cards?.data[0].id,
+                'id': paymentData.sourceId,
                 'type': 'card'
             },
             'encryptedData': encryptedData.encryptedMessage,
@@ -202,7 +202,7 @@ import publicIP from 'react-native-public-ip';
 
         return axios.get(this.baseUrl + 'payments/' + paymentId , this.options)
             .then(response => {
-                console.log(response)
+                //console.log(response)
                 return response.data.data
             }).catch(error => {
                 console.log(error.response)
