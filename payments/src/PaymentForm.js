@@ -10,6 +10,7 @@ import Button from '@material-ui/core/Button';
 import LinearProgress from '@material-ui/core/LinearProgress';
 import CircleApi from './lib/circle-api';
 import { makeStyles } from '@material-ui/core/styles';
+import numeral from 'numeral';
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -38,7 +39,7 @@ const useStyles = makeStyles((theme) => ({
         textAlign: 'center',
         fontSize: 24, 
         display: 'inline-block',
-        width: '50px !important'
+        width: '75px !important'
     },
     select: {
         padding: 0,
@@ -133,7 +134,8 @@ export default function PaymentForm() {
     const [error, setError] = React.useState(false);
     const [success, setSuccess] = React.useState(false);
     const [paymentId, setPaymentId] = React.useState(null);
-
+    const [exchangeRate, setExchangeId] = React.useState(72.38);
+    const [paymentAmount, setPaymentAmount] = React.useState(72.38);
     async function createPayment() {
         setProcessing(true)
         
@@ -145,7 +147,7 @@ export default function PaymentForm() {
             //sessionId: 'xxx',
             cvv: '111',
             cardId: 'db18ed0c-69f4-4fb5-ae37-891e6067f434',
-            amount: 10,
+            amount: numeral(paymentAmount/exchangeRate).format('0,0.00'),
             number: '4200000000000000',
             currency: 'USD',
             sourceId: cards[0].id
@@ -243,7 +245,7 @@ export default function PaymentForm() {
                                 whiteSpace: 'normal',
                                 display: 'flex',
                                 flexWrap: 'wrap',
-                                justifyContent: 'space-between',
+                                justifyContent: 'flex-start',
                                 flexDirection: 'column',
                             }}>
                                 <Typography variant="h6" gutterBottom color="white" className={classes.heading} style={{fontSize: 14, lineHeight: '10px'}}>
@@ -260,8 +262,11 @@ export default function PaymentForm() {
                             flexWrap: 'wrap',
                             justifyContent: 'space-between'
                         }}>
-                            <Typography variant="h6" gutterBottom color="white" className={classes.heading} style={{fontSize: 20}}>
-                                ARS $10.00
+                            <Typography variant="h6" gutterBottom color="white" className={classes.heading} style={{fontSize: 18}}>
+                            ARS ${paymentAmount}<br />
+                            <span style={{fontSize: 12}}>
+                                USD ${numeral(paymentAmount/exchangeRate).format('0,0.00')}
+                            </span>
                             </Typography>
                         </div>
                     </div>
@@ -354,7 +359,7 @@ export default function PaymentForm() {
                                 whiteSpace: 'normal',
                                 display: 'flex',
                                 flexWrap: 'wrap',
-                                justifyContent: 'space-between',
+                                justifyContent: 'flex-start',
                                 flexDirection: 'column',
                             }}>
                                 <Typography variant="h6" gutterBottom color="white" className={classes.heading} style={{fontSize: 14, lineHeight: '10px'}}>
@@ -371,8 +376,11 @@ export default function PaymentForm() {
                             flexWrap: 'wrap',
                             justifyContent: 'space-between'
                         }}>
-                            <Typography variant="h6" gutterBottom color="white" className={classes.heading} style={{fontSize: 20}}>
-                                ARS $10.00
+                            <Typography variant="h6" gutterBottom color="white" className={classes.heading} style={{fontSize: 18}}>
+                            ARS ${paymentAmount}<br />
+                            <span style={{fontSize: 12}}>
+                                USD ${numeral(paymentAmount/exchangeRate).format('0,0.00')}
+                            </span>
                             </Typography>
                         </div>
                     </div>
@@ -483,8 +491,12 @@ export default function PaymentForm() {
                             classes={{
                                 root: classes.input, // class name, e.g. `classes-nesting-root-x`
                             }}
-                            value="10" disableUnderline={true}  />
+                            onChange={(event) => setPaymentAmount(event.target.value)}
+                            value={paymentAmount} disableUnderline={true}  />
                         </div>
+                        <Typography variant="h6" gutterBottom color="white" className={classes.label} >
+                            USD ${numeral(paymentAmount/exchangeRate).format('0,0.00')}
+                        </Typography>
                         </Grid>
                     </Grid>
                     <Typography variant="h6" gutterBottom color="white" className={classes.label} style={{marginTop: 20}} >
