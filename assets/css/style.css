@@ -1527,7 +1527,6 @@ section {
 	font-weight: 400;
 	line-height: 45px;
 	height: 45px;
-	text-transform: capitalize;
 	border: none;
 	background: #ffffff;
 	padding-left: 24px;
@@ -1689,7 +1688,7 @@ section {
 }
 
 .navbar-nav > li > a {
-	font-size: 13px;
+	font-size: 20px;
 	text-transform: uppercase;
 	font-weight: 700;
 	line-height: 100px;
@@ -1982,6 +1981,7 @@ section {
 .navbar.navbar--dark .module .module-icon i,
 .navbar.navbar--dark .navbar-nav > li > a {
 	color: #222222;
+	font-size: 100;
 }
 
 .header-8 .navbar.navbar--dark .module-menu .module-icon:after,
